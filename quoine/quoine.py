@@ -51,7 +51,6 @@ class Quoine:
 
         if params is not None and params is not {}:
             request_url += '?' + urlencode(params)
-        print(request_url)
 
         return requests.get(request_url, headers=request_headers)
 
