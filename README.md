@@ -11,26 +11,26 @@ Note: Use at your own risk.
 
 1. Acquire your API token id and passpharse from the platform's setting page
 2. Set platform of choice
-'''python
-    # Instantiating for Quoinex platform
-    api = Quoine(token_id, token_passphrase)
 
-    # Instantiating for Qryptos platform
-    api = Quoine(token_id, token_passphrase, is_qryptos=True)
-'''
+        # instantiating for Quoinex platform
+        api = Quoine(token_id, token_passphrase)
+
+        # instantiating for Qryptos platform
+        api = Quoine(token_id, token_passphrase, is_qryptos=True)
+
 3. Example code
-'''python
-    from python-quoine import Quoine
 
-    token_id = 'REPLACE_WITH_TOKEN_ID'
-    token_passphrase = 'REPLACE_WITH_TOKEN_PASSPHRASE'
+        from python-quoine import Quoine
 
-    api = Quoine(token_id, token_passphrase, is_qryptos=True)
-    resp = api.get_products()
-    
-    print(resp.status_code)
-    print(resp.content)
-'''
+        token_id = 'REPLACE_WITH_TOKEN_ID'
+        token_passphrase = 'REPLACE_WITH_TOKEN_PASSPHRASE'
+
+        api = Quoine(token_id, token_passphrase, is_qryptos=True)
+        resp = api.get_products()
+
+        print(resp.status_code)
+        print(resp.content)
+
 
 #### Feel free to tip :)
 
