@@ -13,18 +13,18 @@ try:
 except ImportError:
     from urllib.parse import urlencode
 
-BASE_URL_QUORINE = 'https://api.quoine.com/'
+BASE_URL_QUOINEX = 'https://api.quoine.com/'
 BASE_URL_QRYPTOS = 'https://api.qryptos.com/'
 
 
 class Quoine:
-    def __init__(self, token_id, token_secret, is_quorine=True):
+    def __init__(self, token_id, token_secret, is_qryptos=False):
         self.token_id = str(token_id)
         self.token_secret = str(token_secret)
-        if is_quorine:
-            self.base_url = BASE_URL_QUORINE
-        else:
+        if is_qryptos:
             self.base_url = BASE_URL_QRYPTOS
+        else:
+            self.base_url = BASE_URL_QUOINEX
 
     def api_make_request(self, path):
         auth_payload = {
