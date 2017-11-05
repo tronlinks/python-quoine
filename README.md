@@ -1,7 +1,8 @@
-# Python bindings for Quoinex/Qryptos API
+# (Unofficial) Python bindings for Quoinex/Qryptos API
 
-Mirrors the endpoints as documented on https://developers.quoine.com/.
-Note: Use at your own risk.
+Mirrors the endpoints(API v2) as documented on https://developers.quoine.com/.
+
+Note: In no way affiliated with Quoine/Quoinex/Qryptos. Use at your own risk.
 
 ## Dependencies
 - requests
@@ -20,7 +21,7 @@ Note: Use at your own risk.
 
 3. Example code
 
-        from python-quoine import Quoine
+        from quoine import Quoine
 
         token_id = 'REPLACE_WITH_TOKEN_ID'
         token_passphrase = 'REPLACE_WITH_TOKEN_PASSPHRASE'

@@ -1,5 +1,5 @@
 """
-Python binding for Quoinex/Qryptos API v2.
+(Unofficial) Python binding for Quoinex/Qryptos API v2.
 See https://developers.quoine.com/ for more information
 
 """

@@ -16,7 +16,7 @@ setup(
         'pyjwt'
     ],
     keywords=['quoine', 'quoinex', 'qryptos', 'api'
-              'bitcoin', 'ethereum', 'cryptocurrency'],
+              'trading-platform', 'cryptocurrency'],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Programming Language :: Python',
