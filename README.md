@@ -26,11 +26,10 @@ Note: In no way affiliated with Quoine/Quoinex/Qryptos. Use at your own risk.
         token_id = 'REPLACE_WITH_TOKEN_ID'
         token_passphrase = 'REPLACE_WITH_TOKEN_PASSPHRASE'
 
-        api = Quoine(token_id, token_passphrase, is_qryptos=True)
-        resp = api.get_products()
+        api = Quoine(token_id, token_passphrase)
 
-        print(resp.status_code)
-        print(resp.content)
+        status, result = api.get_products()
+        print(status, result)
 
 
 #### Feel free to tip :)
