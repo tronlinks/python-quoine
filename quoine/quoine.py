@@ -26,7 +26,8 @@ class Quoine:
         else:
             self.base_url = BASE_URL_QUOINEX
 
-    def api_make_request(self, path):
+    def api_request(self, request_type, path, params=None):
+        # prep headers
         auth_payload = {
             'path': path,
             'nonce': str(int(time.time())),
@@ -42,39 +43,41 @@ class Quoine:
             'Content-Type': 'application/json'
         }
 
+        # make request
         request_url = self.base_url + path
 
-        return request_url, request_headers
+        if request_type == 'GET':
+            if params is not None and params is not {}:
+                request_url += '?' + urlencode(params)
 
-    def api_get(self, path, params=None):
-        request_url, request_headers = self.api_make_request(path)
+            resp = requests.get(request_url, headers=request_headers)
 
-        if params is not None and params is not {}:
-            request_url += '?' + urlencode(params)
+        elif request_type == 'PUT':
+            if params is not None:
+                payload = json.dumps(params)
+            else:
+                payload = None
 
-        return requests.get(request_url, headers=request_headers)
+            resp = requests.put(request_url, headers=request_headers,
+                                data=payload)
 
-    def api_put(self, path, params=None):
-        request_url, request_headers = self.api_make_request(path)
+        elif request_type == 'POST':
+            if params is not None:
+                payload = json.dumps(params)
+            else:
+                payload = None
 
-        if params is not None:
-            payload = json.dumps(params)
-        else:
-            payload = None
+            resp = requests.post(request_url, headers=request_headers,
+                                 data=payload)
 
-        return requests.put(request_url, headers=request_headers,
-                            data=payload)
+        # parse results
+        result = None
+        try:
+            result = json.loads(str(resp.content, 'utf-8'))
+        except Exception:
+            result = str(resp.content, 'utf-8')
 
-    def api_post(self, path, params=None):
-        request_url, request_headers = self.api_make_request(path)
-
-        if params is not None:
-            payload = json.dumps(params)
-        else:
-            payload = None
-
-        return requests.post(request_url, headers=request_headers,
-                             data=payload)
+        return resp.status_code, result
 
     # Products (Public API)
     def get_products(self):
@@ -82,14 +85,14 @@ class Quoine:
         Get the list of all available products
         """
 
-        return self.api_get('products')
+        return self.api_request('GET', 'products')
 
     def get_product(self, product_id):
         """
         Get a product
         """
 
-        return self.api_get('products/{}'.format(product_id))
+        return self.api_request('GET', 'products/{}'.format(product_id))
 
     def get_order_book(self, product_id, full=False):
         """
@@ -99,8 +102,8 @@ class Quoine:
         if full:
             params['full'] = 1
 
-        return self.api_get('products/{}/price_levels'.format(product_id),
-                            params)
+        return self.api_request('GET', 'products/{}/price_levels'.format(
+                                product_id), params)
 
     # Executions (Public API)
     def get_executions(self, product_id, limit=None,
@@ -119,7 +122,7 @@ class Quoine:
         if timestamp is not None:
             params['timestamp'] = timestamp
 
-        return self.api_get('executions', params)
+        return self.api_request('GET', 'executions', params)
 
     # Interest Rates (Public API)
     def get_interest_rates(self, currency):
@@ -127,12 +130,12 @@ class Quoine:
         Get interest rates for a currency
         """
 
-        return self.api_get('ir_ladders/{}'.format(currency))
+        return self.api_request('GET', 'ir_ladders/{}'.format(currency))
 
     # Orders (Authenticated API)
     def buy_limit(self, product_id, quantity, price):
         """
-        Buy limit order
+        # Buy limit order
         """
         params = {
             'order_type': 'limit',
@@ -142,7 +145,7 @@ class Quoine:
             'price': price
         }
 
-        return self.api_post('orders', {'order': params})
+        return self.api_request('POST', 'orders', {'order': params})
 
     def sell_limit(self, product_id, quantity, price):
         """
@@ -156,7 +159,7 @@ class Quoine:
             'price': price
         }
 
-        return self.api_post('orders', {'order': params})
+        return self.api_request('POST', 'orders', {'order': params})
 
     def buy_market(self, product_id, quantity, price):
         """
@@ -170,7 +173,7 @@ class Quoine:
             'price': price
         }
 
-        return self.api_post('orders', {'order': params})
+        return self.api_request('POST', 'orders', {'order': params})
 
     def sell_market(self, product_id, quantity, price):
         """
@@ -184,7 +187,7 @@ class Quoine:
             'price': price
         }
 
-        return self.api_post('orders', {'order': params})
+        return self.api_request('POST', 'orders', {'order': params})
 
     def get_order(self, order_id, funding_currency=None, product_id=None,
                   status=None, with_details=False):
@@ -201,14 +204,14 @@ class Quoine:
         if with_details is not False:
             params['with_details'] = 1
 
-        return self.api_get('orders/{}'.format(order_id), params)
+        return self.api_request('GET', 'orders/{}'.format(order_id), params)
 
     def cancel_order(self, order_id):
         """
         Cancel an order
         """
 
-        return self.api_put('orders/{}/cancel'.format(order_id))
+        return self.api_request('PUT', 'orders/{}/cancel'.format(order_id))
 
     def edit_order(self, order_id, quantity, price):
         """
@@ -219,14 +222,15 @@ class Quoine:
             'price': price
         }
 
-        return self.api_put('orders/{}'.format(order_id), {'order': params})
+        return self.api_request('PUT', 'orders/{}'.format(order_id),
+                                {'order': params})
 
     def get_order_trades(self, order_id):
         """
         Get order trades
         """
 
-        return self.api_get('orders/{}/trades'.format(order_id))
+        return self.api_request('GET', 'orders/{}/trades'.format(order_id))
 
     def get_order_executions(self, order_id, limit=None, page=None):
         """
@@ -238,8 +242,8 @@ class Quoine:
         if page is not None:
             params['page'] = page
 
-        return self.api_get('orders/{}/executions'.format(order_id),
-                            params)
+        return self.api_request('GET', 'orders/{}/executions'.format(order_id),
+                                params)
 
     # Executions (Authenticated API)
     def get_own_executions(self, product_id):
@@ -250,7 +254,7 @@ class Quoine:
             'product_id': product_id
         }
 
-        return self.api_get('executions/me', params)
+        return self.api_request('GET', 'executions/me', params)
 
     # Accounts (Authenticated API)
     def get_fiat_accounts(self):
@@ -258,7 +262,7 @@ class Quoine:
         Get fiat accounts
         """
 
-        return self.api_get('fiat_accounts')
+        return self.api_request('GET', 'fiat_accounts')
 
     def create_fiat_account(self, currency):
         """
@@ -267,21 +271,21 @@ class Quoine:
         params = {
             'currency': currency
         }
-        return self.api_post('fiat_accounts', params)
+        return self.api_request('POST', 'fiat_accounts', params)
 
     def get_crypto_accounts(self):
         """
         Get fiat accounts
         """
 
-        return self.api_get('crypto_accounts')
+        return self.api_request('GET', 'crypto_accounts')
 
     def get_accounts(self):
         """
         Get all accounts
         """
 
-        return self.api_get('accounts/balance')
+        return self.api_request('GET', 'accounts/balance')
 
     # Assets Lending (Authenticated API)
     def create_loan_bids(self, rate, quantity, currency):
@@ -294,7 +298,7 @@ class Quoine:
             'currency': currency
         }
 
-        return self.api_post('loan_bids', {'loan_bid': params})
+        return self.api_request('POST', 'loan_bids', {'loan_bid': params})
 
     def get_loan_bids(self, currency=None):
         """
@@ -304,14 +308,14 @@ class Quoine:
         if currency is not None:
             params['currency'] = currency
 
-        return self.api_get('loan_bids', params)
+        return self.api_request('GET', 'loan_bids', params)
 
     def close_loan_bid(self, loan_id):
         """
         Close loan bid
         """
 
-        return self.api_put('loan_bids/{}/close'.format(loan_id))
+        return self.api_request('PUT', 'loan_bids/{}/close'.format(loan_id))
 
     def get_loan(self, currency):
         """
@@ -321,7 +325,7 @@ class Quoine:
             'currency': currency
         }
 
-        return self.api_get('loans', params)
+        return self.api_request('GET', 'loans', params)
 
     def update_loan(self, loan_id, fund_reloaned):
         """
@@ -331,7 +335,8 @@ class Quoine:
             'fund_reloaned': fund_reloaned
         }
 
-        return self.api_put('loan/{}'.format(loan_id), {'loan': params})
+        return self.api_request('PUT', 'loan/{}'.format(loan_id),
+                                {'loan': params})
 
     # Trading Accounts (Authenticated API)
     def get_trading_accounts(self):
@@ -339,14 +344,15 @@ class Quoine:
         Get trading accounts
         """
 
-        return self.api_get('trading_accounts')
+        return self.api_request('GET', 'trading_accounts')
 
     def get_trading_account(self, account_id):
         """
         Get trading account
         """
 
-        return self.api_get('trading_accounts/{}'.format(account_id))
+        return self.api_request('GET', 'trading_accounts/{}'.format(
+                                account_id))
 
     def update_leverage_level(self, account_id, leverage_level):
         """
@@ -356,8 +362,8 @@ class Quoine:
             'leverage_level': leverage_level
         }
 
-        return self.api_put('trading_accounts/{}'.format(account_id),
-                            {'trading_account': params})
+        return self.api_request('PUT', 'trading_accounts/{}'.format(
+                                account_id), {'trading_account': params})
 
     # Trades (Authenticated API)
     def get_trades(self, funding_currency=None, status=None):
@@ -370,7 +376,7 @@ class Quoine:
         if status is not None:
             params['status'] = status
 
-        return self.api_get('trading_accounts', params)
+        return self.api_request('GET', 'trading_accounts', params)
 
     def close_trade(self, trade_id, closed_quantity=None):
         """
@@ -380,7 +386,8 @@ class Quoine:
         if closed_quantity is not None:
             params['closed_quantity'] = closed_quantity
 
-        return self.api_put('trades/{}/close'.format(trade_id), params)
+        return self.api_request('PUT', 'trades/{}/close'.format(trade_id),
+                                params)
 
     def close_trades(self, side=None):
         """
@@ -390,7 +397,7 @@ class Quoine:
         if side is not None:
             params['side'] = side
 
-        return self.api_put('trades/close_all', params)
+        return self.api_request('PUT', 'trades/close_all', params)
 
     def update_trade(self, trade_id, stop_loss, take_profit):
         """
@@ -401,11 +408,12 @@ class Quoine:
             'take_profit': take_profit
         }
 
-        return self.api_put('trades/{}'.format(trade_id), {'trade': params})
+        return self.api_request('PUT', 'trades/{}'.format(trade_id),
+                                {'trade': params})
 
     def get_trade_loan(self, trade_id):
         """
         Get trade's loan
         """
 
-        return self.api_get('trades/{}/loans'.format(trade_id))
+        return self.api_request('GET', 'trades/{}/loans'.format(trade_id))
