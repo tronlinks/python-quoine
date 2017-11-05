@@ -1,4 +1,7 @@
-from distutils.core import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 version = '0.0.1'
 
@@ -11,12 +14,10 @@ setup(
     url='https://github.com/seanlim1/python-quoine',
     license='MIT',
     packages=['quoine'],
-    install_requires=[
-        'requests',
-        'pyjwt'
-    ],
+    install_requires=['requests', 'pyjwt'],
     keywords=['quoine', 'quoinex', 'qryptos', 'api'
               'trading-platform', 'cryptocurrency'],
+    python_requires='>=2.6, !=3.0.*, !=3.1.*, !=3.2.*, <4',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Programming Language :: Python',
